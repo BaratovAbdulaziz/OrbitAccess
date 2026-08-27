@@ -1,0 +1,41 @@
+/* messages */
+.message-page { min-height: calc(100vh - 64px - 200px); display: grid; place-items: center; padding: var(--s-section) 0; }
+.message-card { max-width: 480px; display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-md); }
+.error-text { color: var(--error); }
+
+/* static pages */
+.page-band { padding: 64px 0 var(--s-section); min-height: calc(100vh - 64px - 200px); }
+.page-prose { max-width: 680px; display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-md); }
+.page-prose .display-lg { margin-bottom: var(--s-sm); }
+.page-prose .title-md:not(:first-of-type) { margin-top: var(--s-md); }
+.steps-ol { display: flex; flex-direction: column; gap: var(--s-xs); padding-left: 20px; }
+.steps-ol code { font-family: var(--font-code); font-size: 13px; background: var(--surface-card); border-radius: 4px; padding: 2px 6px; }
+.caption-note { margin-top: var(--s-md); color: var(--muted); font-size: 13px; }
+
+/* docs */
+.doc-list { display: flex; flex-direction: column; width: 100%; }
+.doc-row {
+  display: grid; grid-template-columns: 52px minmax(180px, 280px) 1fr;
+  gap: var(--s-md); align-items: baseline; align-content: start;
+  padding: var(--s-md) 0; border-bottom: 1px solid var(--hairline-soft);
+}
+.chip-method {
+  font-family: var(--font-code); font-size: 11px; font-weight: 500; letter-spacing: 1px;
+  color: var(--teal); background: rgba(93, 184, 166, 0.14);
+  border-radius: var(--r-sm, 6px); padding: 3px 0; text-align: center; align-self: center;
+}
+.chip-method::before { content: ""; }
+.doc-path { font-family: var(--font-code); font-size: 13px; color: var(--ink); word-break: break-all; }
+.doc-path.scope { color: var(--primary-active); }
+.doc-desc { font-size: 14px !important; color: var(--body-c); }
+.doc-pre {
+  font-family: var(--font-code); font-size: 13px; line-height: 1.7;
+  background: var(--surface-card); border: 1px solid var(--hairline);
+  border-radius: var(--r-lg); padding: var(--s-md) var(--s-lg);
+  overflow-x: auto; white-space: pre; color: var(--body-c); width: 100%;
+}
+
+@media (max-width: 767px) {
+  .doc-row { grid-template-columns: 44px 1fr; }
+  .doc-row .doc-desc { grid-column: 1 / -1; }
+}

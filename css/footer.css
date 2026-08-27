@@ -1,0 +1,13 @@
+/* footer */
+.footer { background: var(--dark-surface); color: var(--on-dark-soft); padding: 64px 0; font-size: 14px; }
+.footer .container { display: flex; align-items: center; justify-content: space-between; gap: var(--s-lg); flex-wrap: wrap; }
+.footer .wordmark { color: var(--on-dark); }
+.footer .spike { color: var(--on-dark); }
+.footer a { color: var(--on-dark-soft); text-decoration: none; }
+.footer nav { display: flex; gap: var(--s-lg); flex-wrap: wrap; }
+
+/* Notion panel */
+.nt-static { cursor: default; align-items: center; }
+.acc-head.nt-static .badge-pill { margin-left: auto; flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; }
+.nt-emoji { width: 34px; height: 34px; border-radius: var(--r-full); background: var(--surface-card); display: inline-flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.nt-ws { display: inline-flex; align-items: center; justify-content: center; font-size: 28px; background: var(--surface-card); }

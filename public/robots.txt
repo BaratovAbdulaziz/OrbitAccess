@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /api/
+Disallow: /login
+Disallow: /logout
+Disallow: /refresh
+Disallow: /notion/callback
+Disallow: /share/
+
+Sitemap: http://localhost:3000/sitemap.xml
