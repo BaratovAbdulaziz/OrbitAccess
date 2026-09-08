@@ -1,0 +1,20 @@
+@{
+    var heading = ViewData["MessageHeading"] as string ?? "Error";
+    var body = ViewData["MessageBody"] as string ?? "";
+    var error = ViewData["MessageError"] as bool? ?? false;
+    var showLogin = ViewData["MessageLogin"] as bool? ?? false;
+}
+<section class="message-page">
+    <div class="message-card">
+        <h1 class="display-sm @(error ? "error-text" : "")">@heading</h1>
+        <p class="body-md">@Html.Raw(body)</p>
+        @if (error)
+        {
+            <a class="btn btn-secondary" href="/">Back home</a>
+        }
+        else if (showLogin)
+        {
+            <a class="btn btn-primary" href="/login">@Html.Raw(Icons.GitHubMark)<span>Sign in with GitHub</span></a>
+        }
+    </div>
+</section>

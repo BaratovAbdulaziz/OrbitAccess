@@ -1,0 +1,9 @@
+@page "/login/notion"
+@model OrbitAccess.Pages.NotionLoginModel
+@{
+    ViewData["Title"] = "Connect Notion — Orbit Access";
+}
+@if (ViewData["MessageHeading"] != null)
+{
+    <partial name="_MessagePage" />
+}

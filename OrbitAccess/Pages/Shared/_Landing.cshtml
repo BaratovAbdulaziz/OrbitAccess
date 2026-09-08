@@ -1,0 +1,86 @@
+@model OrbitAccess.Models.Session
+@using OrbitAccess
+
+<section class="hero-band" id="landing-hero">
+    <div id="scroll-progress"></div>
+    <div class="hero-orbs" aria-hidden="true"><span class="orb orb-a"></span><span class="orb orb-b"></span><span class="orb orb-c"></span></div>
+    <div class="container hero-grid">
+        <div class="hero-copy">
+            <span class="badge-pill">GitHub + Notion, together</span>
+            <h1 class="display-xl">Your code and your docs.<br>One <span class="grad-word">dashboard</span>.</h1>
+            <p class="body-strong">Connect GitHub and Notion once. Get a single live view of your repositories, organizations, and workspace pages &mdash; ready for you and your team.</p>
+            <div class="button-row">
+                <a class="btn btn-primary" href="/login">@Html.Raw(Icons.GitHubMark)<span>Start free with GitHub</span></a>
+                <a class="btn btn-secondary" href="#how">See how it works</a>
+            </div>
+        </div>
+        @Html.Raw(Rendering.OrbitObject())
+    </div>
+</section>
+
+<div class="marquee-band" aria-hidden="true">
+    <div class="marquee-track">
+        @for (var i = 0; i < 2; i++)
+        {
+            <div class="chip-set">
+                <span>One dashboard</span><span>OAuth 2.0</span><span>No passwords</span><span>HttpOnly sessions</span>
+                <span>CSRF state checks</span><span>GitHub API</span><span>Notion API</span><span>Instant search</span><span>Dark mode</span><span>Server-rendered</span>
+            </div>
+        }
+    </div>
+</div>
+
+<section class="landing-stats-band">
+    <div class="container landing-stats" data-reveal-group>
+        <div class="stat-item"><span class="stat-num" data-count="2">0</span><span class="stat-label">providers, one view</span></div>
+        <div class="stat-item"><span class="stat-num" data-count="0">0</span><span class="stat-label">passwords collected or stored</span></div>
+        <div class="stat-item"><span class="stat-num" data-count="100" data-suffix="%">0%</span><span class="stat-label">standard OAuth 2.0 flow</span></div>
+        <div class="stat-item"><span class="stat-num" data-count="60" data-suffix="s" data-prefix="<">&lt;1s</span><span class="stat-label">from sign-in to dashboard</span></div>
+    </div>
+</section>
+
+<section class="steps-band" id="how">
+    <div class="container">
+        <div class="section-head" data-reveal>
+            <span class="badge-pill">How it works</span>
+            <h2 class="display-lg">Up and running in three steps.</h2>
+            <p class="body-md">No setup, no config files, nothing to install. You're one authorization away.</p>
+        </div>
+        <div class="steps-grid" data-reveal-group>
+            <div class="step-tile"><span class="step-num">01</span><h3 class="title-md">Sign in</h3><p class="body-md">Authorize with GitHub through the official OAuth flow. We never see your password &mdash; only a scoped access token.</p></div>
+            <div class="step-tile"><span class="step-num">02</span><h3 class="title-md">Connect Notion</h3><p class="body-md">One click links your workspace. Pick the pages you want visible. Revoke access anytime, on either side.</p></div>
+            <div class="step-tile"><span class="step-num">03</span><h3 class="title-md">Everything, one place</h3><p class="body-md">Repos, orgs, and docs render side by side in a fast dashboard that's there every time you come back.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="features-band" id="features">
+    <div class="container">
+        <div class="section-head" data-reveal>
+            <span class="badge-pill">Why Orbit</span>
+            <h2 class="display-lg">Built to be trusted.</h2>
+            <p class="body-md">Security isn't a feature bolted on at the end &mdash; it's how the whole thing is wired.</p>
+        </div>
+        <div class="card-grid four" data-reveal-group>
+            @Html.Raw(string.Concat(LandingData.Features.Select(Rendering.Feature)))
+        </div>
+    </div>
+</section>
+
+<section class="cta-band">
+    <div class="cta-glow" aria-hidden="true"></div>
+    <div class="container" data-reveal>
+        <span class="badge-coral">Get started</span>
+        <h2 class="display-lg">Ready when you are.</h2>
+        <p class="body-md">Connect your accounts in under a minute. No credit card, no setup wizard.</p>
+        <div class="button-row button-row--center">
+            <a class="btn btn-primary" href="/login">@Html.Raw(Icons.GitHubMark)<span>Start free with GitHub</span></a>
+            <a class="btn btn-secondary" href="/docs">Read the docs</a>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="/vendor/anime.min.js"></script>
+    <script src="/landing.js"></script>
+}

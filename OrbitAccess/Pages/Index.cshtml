@@ -1,0 +1,17 @@
+@page
+@model OrbitAccess.Pages.IndexModel
+@{
+    ViewData["Title"] = "Orbit Access — Team access control for GitHub & Notion";
+}
+@if (ViewData["MessageHeading"] != null)
+{
+    <partial name="_MessagePage" />
+}
+else if (Model.LoggedIn)
+{
+    <partial name="_Dashboard" model="Model.Session" />
+}
+else
+{
+    <partial name="_Landing" model="Model.Session" />
+}

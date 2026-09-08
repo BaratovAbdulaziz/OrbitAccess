@@ -1,0 +1,9 @@
+@page "/notion/callback"
+@model OrbitAccess.Pages.NotionCallbackModel
+@{
+    ViewData["Title"] = "Notion callback — Orbit Access";
+}
+@if (ViewData["MessageHeading"] != null)
+{
+    <partial name="_MessagePage" />
+}

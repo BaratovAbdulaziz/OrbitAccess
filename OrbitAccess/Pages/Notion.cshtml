@@ -1,0 +1,150 @@
+@page "/notion"
+@model OrbitAccess.Pages.NotionModel
+@{
+    ViewData["Title"] = "Notion access — Orbit Access";
+}
+@if (!Model.Connected)
+{
+    <section class="page-band">
+        <div class="container">
+            <article class="page-prose">
+                <span class="badge-pill" style="background: rgba(232,165,90,.18); color: var(--ink);">&#9679; Notion not connected</span>
+                <h1 class="display-lg">Notion access</h1>
+                <p class="body-md">Connect your workspace to see every page and database the integration can reach — then grant teammates access alongside their repository roles.</p>
+                <a class="btn btn-primary" href="/login/notion"><span>Connect Notion workspace</span></a>
+
+                <h2 class="title-md">What connecting does</h2>
+                <ol class="steps-ol body-md">
+                    <li>You approve access on notion.so — we never see your Notion password.</li>
+                    <li>The server exchanges a one-time code for an integration token, kept server-side and cached locally so your connection survives restarts.</li>
+                    <li>The panel lists exactly which pages and databases are reachable; nothing else is touched.</li>
+                </ol>
+                <p class="caption-note">Notion API credentials stay server-side, exactly like the GitHub token.</p>
+            </article>
+        </div>
+    </section>
+}
+else
+{
+    var wsIconRaw = Model.Session!.Notion!.WorkspaceIcon;
+    var wsIcon = string.IsNullOrEmpty(wsIconRaw)
+        ? "<span class=\"avatar-lg nt-ws\">N</span>"
+        : wsIconRaw.StartsWith("data:")
+            ? $"<img class=\"avatar-lg\" src=\"{System.Net.WebUtility.HtmlEncode(wsIconRaw)}\" alt=\"\">"
+            : $"<span class=\"avatar-lg nt-ws\">{System.Net.WebUtility.HtmlEncode(wsIconRaw)}</span>";
+
+    <section class="dash-band">
+        <div class="container">
+            <div class="dash-head">
+                @Html.Raw(wsIcon)
+                <div class="dash-copy">
+                    <span class="badge-pill" style="background: rgba(93,184,166,.16); color: var(--ink);">&#9679; Notion connected</span>
+                    <h1 class="display-lg">@(Model.Session.Notion.WorkspaceName ?? "Workspace")</h1>
+                    <p class="body-md">Everything the integration can currently reach. &middot; <a class="text-link" style="font-size:16px" href="/refresh/notion">Re-sync</a></p>
+                </div>
+            </div>
+            <div class="stat-tiles four">
+                <a class="connector-tile stat-link" href="#databases"><span class="stat-num">@Model.Databases.Count</span><span class="caption">Databases</span></a>
+                <a class="connector-tile stat-link" href="#pages"><span class="stat-num">@Model.Pages.Count</span><span class="caption">Pages</span></a>
+                <a class="connector-tile stat-link" href="#pages"><span class="stat-num">@Model.Items.Count</span><span class="caption">Shared objects</span></a>
+                <a class="connector-tile stat-link" href="https://www.notion.so" target="_blank" rel="noopener"><span class="stat-num">&#8599;</span><span class="caption">Open workspace</span></a>
+            </div>
+            <div class="dash-actions">
+                <a class="btn btn-secondary btn-sm" href="/refresh/notion">Re-sync now</a>
+                <a class="btn btn-secondary btn-sm" href="/logout/notion">Disconnect workspace</a>
+            </div>
+        </div>
+    </section>
+
+    @if (Model.Items.Count == 0)
+    {
+        <section class="repos-band">
+            <div class="container">
+                <div class="note-banner" style="margin-bottom: var(--s-xl);">
+                    <strong>No shared content yet.</strong> In Notion, open a page or database, click <code>&bull;&bull;&bull;</code> &rarr;
+                    <strong>Connections</strong>, and select this integration. It appears here after you
+                    <a class="text-link" href="/refresh/notion">re-sync</a>.
+                </div>
+            </div>
+        </section>
+    }
+    else
+    {
+        <section class="repos-band">
+            <div class="container" id="databases">
+                <div class="section-head-row"><div class="section-head"><h2 class="display-sm">Databases</h2><p class="body-md">Structured data the workspace shares with Orbit Access.</p></div></div>
+                @if (Model.Databases.Count > 0)
+                {
+                    <div class="repo-grid">
+                        @foreach (var item in Model.Databases)
+                        {
+                            @await Html.PartialAsync("_NotionTile", (item, Model.GrantCounts.GetValueOrDefault(item.Id!), Model.LinkedPageIds.Contains(item.Id!)))
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="empty-note body-md">No databases shared with the integration yet.</p>
+                }
+            </div>
+        </section>
+        <section class="repos-band">
+            <div class="container" id="pages">
+                <div class="section-head-row"><div class="section-head"><h2 class="display-sm">Pages</h2><p class="body-md">Docs and wikis reachable through the connection.</p></div></div>
+                @if (Model.Pages.Count > 0)
+                {
+                    <div class="repo-grid">
+                        @foreach (var item in Model.Pages)
+                        {
+                            @await Html.PartialAsync("_NotionTile", (item, Model.GrantCounts.GetValueOrDefault(item.Id!), Model.LinkedPageIds.Contains(item.Id!)))
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="empty-note body-md">No pages shared with the integration yet.</p>
+                }
+            </div>
+        </section>
+    }
+
+    <div id="nt-share-modal" class="nt-modal" style="display:none">
+        <div class="nt-modal-backdrop"></div>
+        <div class="nt-modal-content">
+            <div class="nt-modal-header">
+                <h3 class="title-md" id="nt-share-title">Share page</h3>
+                <button class="nt-modal-close" id="nt-modal-close" type="button">&times;</button>
+            </div>
+            <div class="nt-modal-body">
+                <div class="nt-link-section">
+                    <h4 class="caption">Share by link</h4>
+                    <div class="nt-link-row" id="nt-link-row">
+                        <button class="btn btn-secondary btn-sm" id="nt-link-create" type="button">Create link</button>
+                    </div>
+                    <p class="nt-share-msg caption-note" id="nt-link-msg"></p>
+                </div>
+                <div class="nt-share-form">
+                    <h4 class="caption">Invite by email</h4>
+                    <div class="nt-input-row">
+                        <input type="email" id="nt-share-email" class="acc-input" placeholder="teammate@gmail.com" autocomplete="email">
+                        <select id="nt-share-level" class="perm-select">
+                            <option value="read">Read</option>
+                            <option value="write">Write</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button class="btn btn-primary btn-sm" id="nt-share-submit" type="button">Grant</button>
+                    </div>
+                    <p class="nt-share-msg caption-note" id="nt-share-msg"></p>
+                </div>
+                <div class="nt-access-list" id="nt-access-list">
+                    <h4 class="caption">People with access</h4>
+                    <div class="nt-access-items" id="nt-access-items"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="/notion.js"></script>
+}

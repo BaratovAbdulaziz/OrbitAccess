@@ -1,0 +1,211 @@
+@model OrbitAccess.Models.Session
+@using OrbitAccess
+@{ var user = Model.User!; var ghReposUrl = $"https://github.com/{user.Login}?tab=repositories"; }
+
+<section class="dash-band">
+    <div class="container">
+        <div class="dash-head">
+            <img class="avatar-lg" src="@user.AvatarUrl" alt="">
+            <div class="dash-copy">
+                <span class="badge-coral">Access panel</span>
+                <h1 class="display-lg">Welcome back, @(user.Name ?? user.Login).</h1>
+                <p class="body-md">Click any repository to see exactly who has access.@(string.IsNullOrEmpty(user.Location) ? "" : $" &middot; {user.Location}") &middot; <a class="text-link" style="font-size:16px" href="@user.HtmlUrl" target="_blank" rel="noopener">@@@user.Login</a></p>
+            </div>
+        </div>
+        <div class="stat-tiles four">
+            <a class="connector-tile stat-link" href="#public"><span class="stat-num">@Model.OwnPublic.Count</span><span class="caption">Public repos</span></a>
+            <a class="connector-tile stat-link" href="#private"><span class="stat-num">@Model.OwnPrivate.Count</span><span class="caption">Private repos</span></a>
+            <a class="connector-tile stat-link" href="@(user.HtmlUrl)?tab=followers" target="_blank" rel="noopener"><span class="stat-num">@user.Followers</span><span class="caption">Followers</span></a>
+            <a class="connector-tile stat-link" href="#orgs"><span class="stat-num">@Model.Orgs.Count</span><span class="caption">Organizations</span></a>
+        </div>
+    </div>
+</section>
+
+<section class="repos-band">
+    <div class="container" id="public">
+        @Html.Raw(Rendering.SectionHead("Public repositories", "Expand a repo to audit who can reach it.", ghReposUrl, "View all"))
+        @if (Model.OwnPublic.Count > 0)
+        {
+            <div class="repo-grid">@Html.Raw(string.Concat(Model.OwnPublic.Select(Rendering.AccTile)))</div>
+        }
+        else
+        {
+            <p class="empty-note body-md">No public repositories found on your account yet.</p>
+        }
+    </div>
+</section>
+
+<section class="repos-band">
+    <div class="container" id="private">
+        @Html.Raw(Rendering.SectionHead("Private repositories", "The sensitive ones — check them first.", ghReposUrl, "Manage on GitHub"))
+        @if (Model.OwnPrivate.Count > 0)
+        {
+            <div class="repo-grid">@Html.Raw(string.Concat(Model.OwnPrivate.Select(Rendering.AccTile)))</div>
+        }
+        else
+        {
+            <p class="empty-note body-md">No private repositories visible for this account.</p>
+        }
+    </div>
+</section>
+
+<section class="repos-band">
+    <div class="container" id="orgs">
+        @Html.Raw(Rendering.SectionHead("Organizations", "Team-owned repositories and their access.", "", ""))
+        @if (Model.Orgs.Count > 0)
+        {
+            @foreach (var o in Model.Orgs)
+            {
+                <div class="org-block">
+                    <div class="org-head">
+                        <img class="org-avatar" src="@o.AvatarUrl" alt="">
+                        <span class="repo-name">@o.Login</span>
+                        <span class="badge-pill">@(o.Repos.Count) repo@(o.Repos.Count == 1 ? "" : "s")</span>
+                    </div>
+                    @if (o.Repos.Count > 0)
+                    {
+                        <div class="repo-grid">@Html.Raw(string.Concat(o.Repos.Select(Rendering.AccTile)))</div>
+                    }
+                    else
+                    {
+                        <p class="empty-note body-md">No visible repositories in this organization.</p>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <p class="empty-note body-md">You're not a member of any organizations yet.</p>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        (function () {
+            function note(text) {
+                var p = document.createElement("p");
+                p.className = "caption acc-note";
+                p.textContent = text;
+                return p;
+            }
+            function person(u) {
+                var row = document.createElement("div");
+                row.className = "acc-person";
+                var img = document.createElement("img");
+                img.className = "acc-avatar"; img.src = u.avatar_url || ""; img.alt = ""; img.loading = "lazy";
+                var link = document.createElement("a");
+                link.className = "acc-login"; link.href = u.html_url || "#";
+                link.target = "_blank"; link.rel = "noopener"; link.textContent = u.login;
+                var role = u.role_name || (u.permissions && u.permissions.admin ? "admin" : u.permissions && u.permissions.push ? "write" : "read");
+                var chip = document.createElement("span");
+                chip.className = "role-chip role-" + role; chip.textContent = role;
+                row.appendChild(img); row.appendChild(link); row.appendChild(chip);
+                return row;
+            }
+            function loginLink() {
+                var a = document.createElement("a");
+                a.href = "/login"; a.textContent = "sign in again";
+                return a;
+            }
+            function skeleton() {
+                var d = document.createElement("div"); d.className = "acc-skel";
+                var a = document.createElement("span"); a.className = "sk-avatar";
+                var b = document.createElement("span"); b.className = "sk-bar";
+                d.appendChild(a); d.appendChild(b);
+                return d;
+            }
+            function addForm(tile) {
+                var f = document.createElement("form");
+                f.className = "acc-add-form";
+                var inp = document.createElement("input");
+                inp.className = "acc-input"; inp.placeholder = "Username or email…";
+                inp.autocomplete = "off"; inp.required = true;
+                var sel = document.createElement("select"); sel.className = "perm-select";
+                ["read", "triage", "write", "maintain", "admin"].forEach(function (p) {
+                    var o = document.createElement("option");
+                    o.value = p; o.textContent = p.charAt(0).toUpperCase() + p.slice(1);
+                    if (p === "write") o.selected = true;
+                    sel.appendChild(o);
+                });
+                var b = document.createElement("button");
+                b.type = "submit"; b.className = "btn btn-primary btn-sm"; b.textContent = "Invite";
+                var msg = document.createElement("p"); msg.className = "caption acc-note acc-msg";
+                f.appendChild(inp); f.appendChild(sel); f.appendChild(b); f.appendChild(msg);
+                f.addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    if (f.dataset.busy) return;
+                    f.dataset.busy = "1"; b.disabled = true; b.textContent = "…";
+                    msg.textContent = "";
+                    var head = tile.querySelector(".acc-head");
+                    fetch("/api/access/" + encodeURIComponent(head.dataset.owner) + "/" + encodeURIComponent(head.dataset.repo), {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ user: inp.value.trim(), permission: sel.value })
+                    })
+                        .then(function (r) { return r.json().then(function (j) { return { status: r.status, json: j }; }); })
+                        .then(function (res) {
+                            if (res.json.error === "unauthorized") {
+                                msg.textContent = "Session expired — ";
+                                msg.appendChild(loginLink());
+                                bodyOf(tile).dataset.loaded = "";
+                                return;
+                            }
+                            msg.textContent = res.json.message || "Something went wrong.";
+                            if (res.json.ok) inp.value = "";
+                            if (res.json.reload) loadList(tile);
+                        })
+                        .catch(function () { msg.textContent = "Network error — try again."; })
+                        .then(function () {
+                            delete f.dataset.busy; b.disabled = false; b.textContent = "Invite";
+                        });
+                });
+                return f;
+            }
+            function bodyOf(tile) { return tile.querySelector(".acc-body"); }
+            function loadList(tile) {
+                var body = bodyOf(tile);
+                body.innerHTML = "";
+                for (var i = 0; i < 3; i++) body.appendChild(skeleton());
+                var head = tile.querySelector(".acc-head");
+                fetch("/api/access/" + encodeURIComponent(head.dataset.owner) + "/" + encodeURIComponent(head.dataset.repo))
+                    .then(function (r) { return r.json(); })
+                    .then(function (list) {
+                        body.innerHTML = "";
+                        if (list && list.error === 401) {
+                            var p = note("Session expired — ");
+                            p.appendChild(loginLink());
+                            body.appendChild(p);
+                            return;
+                        }
+                        if (!Array.isArray(list)) {
+                            body.appendChild(note("Collaborator management needs admin access to this repository — the invite form is hidden because invites wouldn't go through."));
+                            return;
+                        }
+                        if (!list.length) {
+                            body.appendChild(note("Only the owner has access right now."));
+                        } else {
+                            list.forEach(function (u) { body.appendChild(person(u)); });
+                        }
+                        body.appendChild(addForm(tile));
+                    })
+                    .catch(function () {
+                        body.innerHTML = "";
+                        body.appendChild(note("Could not load collaborators — try again later."));
+                    });
+            }
+            document.querySelectorAll(".acc-head").forEach(function (head) {
+                head.addEventListener("click", function () {
+                    var tile = head.parentNode;
+                    var body = bodyOf(tile);
+                    var open = tile.classList.toggle("open");
+                    head.setAttribute("aria-expanded", open ? "true" : "false");
+                    body.hidden = !open;
+                    if (!open || body.dataset.loaded) return;
+                    body.dataset.loaded = "1";
+                    loadList(tile);
+                });
+            });
+        })();
+    </script>
+}

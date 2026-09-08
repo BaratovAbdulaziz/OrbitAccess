@@ -6,7 +6,9 @@ organizations), and invite collaborators with the right permission level in seco
 Connect Notion to browse every page and database your workspace shares with the
 integration in the same panel UI.
 
-Zero dependencies — pure Node.js standard library plus the GitHub & Notion REST APIs.
+Built on **ASP.NET Core (C#)** — one codebase, no external dependencies beyond the
+GitHub & Notion REST APIs. The React landing page shipped by this app is served as a
+pre-built static bundle (no Node runtime required to run the app).
 
 > Full documentation lives in [`docs/`](docs/index.md) — start there.
 
@@ -14,7 +16,7 @@ Zero dependencies — pure Node.js standard library plus the GitHub & Notion RES
 
 1. Create an OAuth App at https://github.com/settings/developers
    (any homepage/callback URL works — the app accepts the reply on every path).
-2. Create a `.env` file next to `server.js`:
+2. The credentials live in `OrbitAccess/.env` (already populated):
 
    ```
    GITHUB_CLIENT_ID=your_client_id
@@ -23,11 +25,13 @@ Zero dependencies — pure Node.js standard library plus the GitHub & Notion RES
    # optional — enables the Notion connection
    NOTION_CLIENT_ID=your_notion_client_id
    NOTION_CLIENT_SECRET=your_notion_secret
+   NOTION_TOKEN=your_configured_notion_token (optional)
    ```
 
-3. `npm start` → http://localhost:3000
+3. `dotnet run --project OrbitAccess` → http://localhost:3000
 
-Requires Node 18+ (uses global `fetch`).
+Requires the **.NET 10 SDK** (`Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation` is
+the only NuGet package).
 
 For Notion: create a **public** integration at notion.so/my-integrations and
 register the redirect URI `http://localhost:3000/notion/callback`
@@ -35,7 +39,8 @@ register the redirect URI `http://localhost:3000/notion/callback`
 
 ## What you get
 
-- **Landing page** (`/`, signed out) — product overview + OAuth explainer.
+- **Landing page** (`/`, signed out) — React build if present (`wwwroot/app`), otherwise
+  a server-rendered Razor landing.
 - **Access control panel** (`/`, signed in) — stat tiles, then every repository
   grouped into Public / Private / Organizations. Expand any repository to see
   everyone who has access (avatar, handle, role chip) and invite new people by
@@ -48,43 +53,46 @@ register the redirect URI `http://localhost:3000/notion/callback`
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| GET | `/` | Landing page or access panel |
+| GET | `/` | Landing page or access panel (GitHub callback accepted here too) |
 | GET | `/login` | Start OAuth (state cookie, 10 min) |
-| ANY | `/*?code=&state=` | OAuth callback — accepted on any path |
 | GET | `/login/notion` | Start Notion OAuth (public integration required) |
 | GET | `/notion/callback` | Notion OAuth callback — links workspace to session |
 | GET | `/logout/notion` | Unlink Notion workspace |
 | GET | `/refresh` | Re-sync profile/repos/orgs with stored token |
 | GET | `/logout` | Destroy session |
 | GET | `/docs`, `/notion`, `/about`, `/privacy`, `/terms` | Pages |
-| GET | `/api/access/:owner/:repo` | JSON list of collaborators |
-| POST | `/api/access/:owner/:repo` | Invite collaborator `{ user, permission }` |
+| GET | `/share/{token}` | Resolve a Notion share link to its workspace item |
+| GET | `/api/access/{owner}/{repo}` | JSON list of collaborators |
+| POST | `/api/access/{owner}/{repo}` | Invite collaborator `{ user, permission }` |
+| GET/POST/DELETE | `/api/notion/access` | Grant / revoke Notion page access by email |
+| GET/POST/DELETE | `/api/notion/access/link` | Create / revoke share links |
 
 Scopes requested: `read:user repo read:org`.
 
 ## Project structure
 
 ```
-├── server.js        entry point & router
-├── style.css        design system (light + dark)
-├── docs/            open-format documentation (Markdown + frontmatter)
-├── lib/
-│   ├── config.js     .env loader & settings
-│   ├── github.js     GitHub REST API calls
-│   ├── notion.js     Notion OAuth + content listing
-│   ├── sessions.js   in-memory session store
-│   └── util.js       escaping, cookies, body parsing
-└── views/
-    ├── icons.js      inline SVG marks
-    ├── shell.js      page frame, nav switcher & theme toggle
-    ├── landing.js    marketing page
-    ├── panel.js      GitHub access control panel
-    └── pages.js      docs, legal, message & Notion pages
+├── OrbitAccess/                 ASP.NET Core app
+│   ├── Program.cs               entry point & pipeline (Kestrel, Razor Pages, controllers)
+│   ├── appsettings.json         runtime config (DataDir, listen URL)
+│   ├── .env                     OAuth client credentials (gitignored)
+│   ├── Controllers/ApiController.cs   JSON API (GitHub + Notion access control)
+│   ├── Pages/                   Razor Pages: Index, Login, Notion, Docs, legal, Share
+│   ├── Pages/Shared/            _Layout + shared partials (dashboard, landing, message)
+│   ├── Services/                GitHubService, NotionService, NotionAccessService,
+│   │                            SessionService, JsonFileStore, RateLimiter
+│   ├── Models/                  Session, GitHubUser/Repo/Org, NotionData, grants, links
+│   ├── Middleware/              SecurityHeadersMiddleware (CSP, HSTS, click-jacking)
+│   └── wwwroot/                 style.css, landing.js, orbit-object.js, React build
+├── app/                         (optional) React landing page source — rebuild target
+├── docs/                        open-format documentation (Markdown + frontmatter)
+└── style.css                    design system (light + dark)
 ```
 
 ## Security notes
 
-- Access tokens and all GitHub data stay in server memory — never sent to the browser.
+- Sessions are HttpOnly cookies backed by an in-memory cache + durable JSON store
+  (`OrbitAccess/.data/`) with a 30-day TTL.
 - CSRF-protected callback via verified random state parameter.
 - All dynamic HTML output is escaped; API path segments are URL-encoded.
-- Sessions are currently lost on restart; persistence is on the roadmap.
+- Security headers (CSP, frame/sniffing protections) set by a middleware on every response.

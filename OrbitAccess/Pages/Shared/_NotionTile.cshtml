@@ -1,0 +1,29 @@
+@model (OrbitAccess.Models.NotionItem Item, int GrantCount, bool HasLink)
+@{
+    var isDb = Model.Item.Object == "database";
+    var glyph = Model.Item.Icon ?? (isDb ? "&#128451;" : "&#128196;");
+}
+<div class="acc-tile">
+    <div class="acc-head nt-static">
+        <span class="nt-emoji">@Html.Raw(glyph)</span>
+        <span class="acc-id">
+            <span class="acc-name">@Model.Item.Title</span>
+            <span class="acc-sub"><span>@Model.Item.Parent</span><span class="acc-date">Edited @OrbitAccess.ViewHelpers.ShortDate(Model.Item.Edited)</span></span>
+        </span>
+        <span class="badge-pill">@Html.Raw(isDb
+            ? OrbitAccess.ViewHelpers.DatabaseIcon + " database"
+            : OrbitAccess.ViewHelpers.PageIcon + " page")</span>
+    </div>
+    <div class="acc-foot">
+        @if (Model.GrantCount > 0)
+        {
+            <span class="nt-grant-count" title="@Model.GrantCount user(s) with access">@Model.GrantCount shared</span>
+        }
+        @if (Model.HasLink)
+        {
+            <span class="nt-link-badge" title="Share link active">&#128279; link</span>
+        }
+        <button class="btn btn-secondary btn-sm nt-share-btn" data-page-id="@Model.Item.Id" data-page-title="@Model.Item.Title">Share</button>
+        <a class="text-link caption-link" href="@Model.Item.Url" target="_blank" rel="noopener">Open in Notion &#8599;</a>
+    </div>
+</div>

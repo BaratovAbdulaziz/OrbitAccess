@@ -1,0 +1,136 @@
+@{
+    var user = (ViewData["Session"] as OrbitAccess.Models.Session)?.User;
+}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@(ViewData["Title"] ?? "Orbit Access — Team access control for GitHub & Notion")</title>
+    <meta name="description" content="One dashboard for GitHub repositories and Notion workspaces. Audit who has access, invite collaborators, manage permissions.">
+    <meta property="og:title" content="Orbit Access">
+    <meta property="og:description" content="Team access control for GitHub & Notion">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://orbit-access-live.vercel.app/og.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+    <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/style.css">
+    <script>
+        (function () { try { var t = localStorage.getItem("theme"); document.documentElement.dataset.theme = t || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); } catch (e) { } document.documentElement.classList.add("js"); })();
+    </script>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to content</a>
+    <header class="top-nav">
+        <div class="container">
+            <div class="nav-left">
+                <a class="wordmark" href="/">@Html.Raw(Icons.OrbitMark)<span>Orbit Access</span></a>
+                <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobileMenu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+            <nav class="nav-links" aria-label="Main navigation">
+                <a class="nav-link" href="/">GitHub</a>
+                <a class="nav-link" href="/notion">Notion</a>
+                <a class="nav-link" href="/docs">Docs</a>
+            </nav>
+            <div class="nav-area">
+                <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode" title="Toggle theme">@Html.Raw(Icons.SunIcon)@Html.Raw(Icons.MoonIcon)</button>
+                @if (user != null)
+                {
+                    <div class="nav-right">
+                        <span class="nav-handle">@@@user.Login</span>
+                        <img class="avatar-sm" src="@user.AvatarUrl" alt="">
+                        <a class="nav-link" href="/refresh" title="Re-sync your GitHub data">Refresh</a>
+                        <a class="nav-link" href="/logout">Log out</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="nav-right">
+                        <a class="btn btn-primary" href="/login">@Html.Raw(Icons.GitHubMark)<span>Sign in with GitHub</span></a>
+                    </div>
+                }
+            </div>
+        </div>
+    </header>
+    <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile navigation">
+        <a class="mobile-link" href="/">GitHub</a>
+        <a class="mobile-link" href="/notion">Notion</a>
+        <a class="mobile-link" href="/docs">Docs</a>
+        @if (user != null)
+        {
+            <div class="mobile-user">
+                <img class="avatar-sm" src="@user.AvatarUrl" alt="">
+                <span class="nav-handle">@@@user.Login</span>
+            </div>
+            <a class="mobile-link" href="/refresh">Refresh</a>
+            <a class="mobile-link" href="/logout">Log out</a>
+        }
+        else
+        {
+            <a class="btn btn-primary mobile-link" href="/login">@Html.Raw(Icons.GitHubMark)<span>Sign in with GitHub</span></a>
+        }
+    </nav>
+    <main id="main-content">
+        @RenderBody()
+    </main>
+    <footer class="footer">
+        <div class="container">
+            <span class="wordmark">@Html.Raw(Icons.OrbitMark)<span>Orbit Access</span></span>
+            <nav aria-label="Footer navigation"><a href="/about">About</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav>
+            <span>&copy; 2026 Orbit Access</span>
+        </div>
+    </footer>
+    <script>
+        (function () {
+            var b = document.getElementById("themeToggle");
+            if (b) b.addEventListener("click", function () {
+                var d = document.documentElement;
+                var next = d.dataset.theme === "dark" ? "light" : "dark";
+                d.dataset.theme = next;
+                try { localStorage.setItem("theme", next); } catch (e) { }
+            });
+            var p = location.pathname;
+            document.querySelectorAll(".nav-links a").forEach(function (a) {
+                var h = a.getAttribute("href");
+                if (h === p || (h === "/notion" && p.indexOf("/notion") === 0)) a.classList.add("active");
+            });
+
+            var menuToggle = document.getElementById("menuToggle");
+            var mobileMenu = document.getElementById("mobileMenu");
+            if (menuToggle && mobileMenu) {
+                menuToggle.addEventListener("click", function () {
+                    var expanded = menuToggle.getAttribute("aria-expanded") === "true";
+                    menuToggle.setAttribute("aria-expanded", !expanded);
+                    mobileMenu.classList.toggle("open");
+                });
+
+                document.addEventListener("click", function (e) {
+                    if (!menuToggle.contains(e.target) && !mobileMenu.contains(e.target)) {
+                        menuToggle.setAttribute("aria-expanded", "false");
+                        mobileMenu.classList.remove("open");
+                    }
+                });
+            }
+        })();
+    </script>
+    @{
+        var scripts = ViewData["Scripts"] as List<string>;
+    }
+    @if (scripts != null)
+    {
+        @foreach (var s in scripts)
+        {
+            @Html.Raw(s)
+        }
+    }
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

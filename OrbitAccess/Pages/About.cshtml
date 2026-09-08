@@ -1,0 +1,19 @@
+@page "/about"
+@model OrbitAccess.Pages.AboutModel
+@{
+    ViewData["Title"] = "About — Orbit Access";
+}
+<section class="page-band">
+    <div class="container">
+        <article class="page-prose">
+            <span class="badge-pill">app</span>
+            <h1 class="display-lg">About</h1>
+            <h2 class="title-md">What this is</h2>
+            <p class="body-md">A team access control panel for GitHub and Notion. Connect with your GitHub account to audit exactly who has access to every repository you can reach — personal, private, and across all your organizations — and invite new members with the right permission level in seconds. Connect a Notion workspace to browse shared pages and databases and grant teammates read/write access by email.</p>
+            <h2 class="title-md">How sign-in works</h2>
+            <p class="body-md">Clicking "Sign in with GitHub" sends you to github.com to authorize this app. GitHub redirects back with a one-time code that is exchanged server-side for an access token. Your identity, repositories, and organizations are then read from the GitHub API.</p>
+            <h2 class="title-md">Design</h2>
+            <p class="body-md">Interface follows a warm canvas, serif display type, coral accents, and hairline borders. Light and dark themes are both first-class.</p>
+        </article>
+    </div>
+</section>

@@ -1,0 +1,12 @@
+@page "/Error"
+@model OrbitAccess.Pages.ErrorModel
+@{
+    ViewData["Title"] = "Error — Orbit Access";
+}
+<section class="message-page">
+    <div class="message-card">
+        <h1 class="display-sm error-text">Something went wrong</h1>
+        <p class="body-md">An unexpected error occurred. @Model.ErrorMessage</p>
+        <a class="btn btn-secondary" href="/">Back home</a>
+    </div>
+</section>

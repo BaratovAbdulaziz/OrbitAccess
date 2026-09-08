@@ -1,0 +1,9 @@
+@page "/share/{token}"
+@model OrbitAccess.Pages.ShareModel
+@{
+    ViewData["Title"] = "Share link — Orbit Access";
+}
+@if (ViewData["MessageHeading"] != null)
+{
+    <partial name="_MessagePage" />
+}

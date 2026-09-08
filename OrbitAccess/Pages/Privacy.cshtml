@@ -1,0 +1,19 @@
+@page "/privacy"
+@model OrbitAccess.Pages.PrivacyModel
+@{
+    ViewData["Title"] = "Privacy Policy — Orbit Access";
+}
+<section class="page-band">
+    <div class="container">
+        <article class="page-prose">
+            <span class="badge-pill">app</span>
+            <h1 class="display-lg">Privacy Policy</h1>
+            <h2 class="title-md">What we access</h2>
+            <p class="body-md">With your authorization we request the OAuth scopes read:user, repo, and read:org. We fetch your basic profile, your recently pushed public and private repositories, your organizations and their recent repos. When you expand a repository we fetch its collaborator list; when you use the invite form we send a collaboration invite on your behalf.</p>
+            <h2 class="title-md">Where data lives</h2>
+            <p class="body-md">GitHub data is held in server memory for the lifetime of the process. Your Notion connection token is cached on the server's local disk (.data/, git-ignored) so you stay connected across restarts. Nothing is logged and there are no analytics trackers.</p>
+            <h2 class="title-md">Your control</h2>
+            <p class="body-md">Log out at any time to destroy your session immediately. You can also revoke this application entirely from your GitHub account under Settings → Applications → Authorized OAuth Apps.</p>
+        </article>
+    </div>
+</section>

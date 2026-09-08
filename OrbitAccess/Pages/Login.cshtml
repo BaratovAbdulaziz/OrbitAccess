@@ -1,0 +1,9 @@
+@page "/login"
+@model OrbitAccess.Pages.LoginModel
+@{
+    ViewData["Title"] = "Sign in — Orbit Access";
+}
+@if (ViewData["MessageHeading"] != null)
+{
+    <partial name="_MessagePage" />
+}
